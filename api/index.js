@@ -15,21 +15,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'oppa-bier-secret-key-2024';
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Servir arquivos estáticos com headers corretos
-app.use(express.static('public', {
-    setHeaders: (res, path) => {
-        if (path.endsWith('.css')) {
-            res.setHeader('Content-Type', 'text/css');
-        }
-        if (path.endsWith('.js')) {
-            res.setHeader('Content-Type', 'application/javascript');
-        }
-        if (path.endsWith('.png') || path.endsWith('.jpg') || path.endsWith('.jpeg')) {
-            res.setHeader('Content-Type', 'image/' + path.split('.').pop());
-        }
-    }
-}));
+app.use(express.static(path.join(__dirname, '..')));
 
 // Session middleware
 app.use(session({
@@ -42,7 +28,7 @@ app.use(session({
 // Configuração do Multer para upload de imagens
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'public/uploads/');
+        cb(null, path.join(__dirname, '..', 'uploads'));
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -68,7 +54,7 @@ const upload = multer({
 });
 
 // Conectar ao banco de dados SQLite
-const db = new sqlite3.Database('./database.db', (err) => {
+const db = new sqlite3.Database(path.join(__dirname, '..', 'database.db'), (err) => {
     if (err) {
         console.error('Erro ao conectar ao banco de dados:', err.message);
     } else {
@@ -605,29 +591,23 @@ app.get('/api/configuracoes', (req, res) => {
 
 // Rota para servir arquivos estáticos
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+    res.sendFile(path.join(__dirname, '..', 'admin.html'));
 });
 
-// Iniciar servidor
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-    console.log(`Acesse: http://localhost:${PORT}`);
-    console.log(`Admin: http://localhost:${PORT}/admin`);
-});
+// Export para Vercel
+module.exports = app;
 
-// Fechar conexão com banco ao encerrar aplicação
-process.on('SIGINT', () => {
-    db.close((err) => {
-        if (err) {
-            console.error('Erro ao fechar banco de dados:', err.message);
-        } else {
-            console.log('Conexão com banco de dados fechada.');
-        }
-        process.exit(0);
+// Para desenvolvimento local
+if (require.main === module) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Servidor rodando na porta ${PORT}`);
+        console.log(`Acesse: http://localhost:${PORT}`);
+        console.log(`Admin: http://localhost:${PORT}/login.html`);
     });
-});
+}
 

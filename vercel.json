@@ -1,51 +1,18 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 30
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/styles.css",
-      "dest": "/public/styles.css"
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
     },
     {
-      "src": "/script.js", 
-      "dest": "/public/script.js"
-    },
-    {
-      "src": "/logo.png",
-      "dest": "/public/logo.png"
-    },
-    {
-      "src": "/login-styles.css",
-      "dest": "/public/login-styles.css"
-    },
-    {
-      "src": "/login-script.js",
-      "dest": "/public/login-script.js"
-    },
-    {
-      "src": "/admin-styles.css",
-      "dest": "/public/admin-styles.css"
-    },
-    {
-      "src": "/admin-script.js",
-      "dest": "/public/admin-script.js"
-    },
-    {
-      "src": "/uploads/(.*)",
-      "dest": "/public/uploads/$1"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/server.js"
+      "source": "/((?!api/).*)",
+      "destination": "/api/index.js"
     }
   ]
 }
+

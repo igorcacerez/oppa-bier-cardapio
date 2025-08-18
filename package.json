@@ -2,10 +2,10 @@
   "name": "oppabier-cardapio",
   "version": "1.0.0",
   "description": "Cardápio Online da Oppa Bier",
-  "main": "server.js",
+  "main": "api/index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
+    "start": "node api/index.js",
+    "dev": "node api/index.js",
     "build": "echo 'Build completed'",
     "vercel-build": "echo 'Vercel build completed'"
   },

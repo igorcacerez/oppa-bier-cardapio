@@ -15,7 +15,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'oppa-bier-secret-key-2024';
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '..')));
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Session middleware
 app.use(session({
@@ -28,7 +28,7 @@ app.use(session({
 // Configuração do Multer para upload de imagens
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '..', 'uploads'));
+        cb(null, path.join(__dirname, '..', 'public', 'uploads'));
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -591,11 +591,11 @@ app.get('/api/configuracoes', (req, res) => {
 
 // Rota para servir arquivos estáticos
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'index.html'));
+    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
 app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'admin.html'));
+    res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
 });
 
 // Export para Vercel

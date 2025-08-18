@@ -15,7 +15,21 @@ const JWT_SECRET = process.env.JWT_SECRET || 'oppa-bier-secret-key-2024';
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+
+// Servir arquivos estáticos com headers corretos
+app.use(express.static('public', {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        }
+        if (path.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        }
+        if (path.endsWith('.png') || path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+            res.setHeader('Content-Type', 'image/' + path.split('.').pop());
+        }
+    }
+}));
 
 // Session middleware
 app.use(session({

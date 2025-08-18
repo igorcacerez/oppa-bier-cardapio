@@ -1,0 +1,27 @@
+{
+  "name": "oppabier-cardapio",
+  "version": "1.0.0",
+  "description": "Cardápio Online da Oppa Bier",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build": "echo 'Build completed'",
+    "vercel-build": "echo 'Vercel build completed'"
+  },
+  "keywords": ["cardapio", "lanchonete", "oppa-bier", "nodejs", "express"],
+  "author": "Oppa Bier",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.x"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "sqlite3": "^5.1.7"
+  }
+}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oppa Bier - Cardápio Online</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="logo.png">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <img src="logo.png" alt="Oppa Bier" class="logo-img">
+                <div class="logo-text">
+                    <h1>Oppa Bier</h1>
+                    <p>Lanchonete & Delivery</p>
+                </div>
+            </div>
+            <nav class="nav">
+                <a href="#cardapio" class="nav-link">
+                    <i class="fas fa-utensils"></i> Cardápio
+                </a>
+                <a href="#destaques" class="nav-link">
+                    <i class="fas fa-star"></i> Destaques
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h2>Bem-vindo ao Oppa Bier</h2>
+                <p>Os melhores lanches e porções da cidade!</p>
+                <div class="hero-info">
+                    <div class="info-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Entrega: 60min | Retirada: 45min</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>Faça seu pedido!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Destaques -->
+    <section id="destaques" class="destaques">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-star"></i> Mais Vendidos
+            </h2>
+            <div id="produtos-destaque" class="produtos-grid">
+                <!-- Produtos em destaque serão carregados aqui -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Cardápio -->
+    <section id="cardapio" class="cardapio">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-book-open"></i> Nosso Cardápio
+            </h2>
+            
+            <div class="categoria-filters" id="categoria-filters">
+                <button class="filter-btn active" data-categoria="all">
+                    <i class="fas fa-th-large"></i> Todas
+                </button>
+                <!-- Botões de categoria serão carregados aqui -->
+            </div>
+            
+            <div id="produtos-container" class="produtos-container">
+                <!-- Produtos serão carregados aqui -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contato" class="footer">
+        <div class="container">
+            <p>&copy; 2024 Oppa Bier. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Loading -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Carregando cardápio...</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

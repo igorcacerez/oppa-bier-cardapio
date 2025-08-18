@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oppa Bier - Painel Administrativo</title>
+    <link rel="stylesheet" href="admin-styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="logo.png">
+</head>
+<body>
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="container">
+            <div class="logo">
+                <img src="logo.png" alt="Oppa Bier" class="logo-img">
+                <div class="logo-text">
+                    <h1>Painel Admin</h1>
+                    <p>Oppa Bier</p>
+                </div>
+            </div>
+            <nav class="nav">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="username-display">Admin</span>
+                </div>
+                <a href="/" class="nav-link" target="_blank">
+                    <i class="fas fa-eye"></i> Ver Site
+                </a>
+                <button id="logout-btn" class="nav-link logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Dashboard -->
+    <section class="dashboard">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-chart-bar"></i> Dashboard
+            </h2>
+            <div id="stats-container" class="stats-grid">
+                <!-- Estatísticas serão carregadas aqui -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Tabs Navigation -->
+    <section class="tabs-section">
+        <div class="container">
+            <div class="tabs-nav">
+                <button class="tab-btn active" data-tab="categorias">
+                    <i class="fas fa-tags"></i> Categorias
+                </button>
+                <button class="tab-btn" data-tab="produtos">
+                    <i class="fas fa-hamburger"></i> Produtos
+                </button>
+                <button class="tab-btn" data-tab="configuracoes">
+                    <i class="fas fa-cog"></i> Configurações
+                </button>
+                <button class="tab-btn" data-tab="usuario">
+                    <i class="fas fa-user"></i> Usuário
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tab Content: Categorias -->
+    <section id="categorias-tab" class="tab-content active">
+        <div class="container">
+            <div class="section-header">
+                <h3><i class="fas fa-tags"></i> Gerenciar Categorias</h3>
+                <button id="add-categoria-btn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nova Categoria
+                </button>
+            </div>
+            
+            <div class="table-container">
+                <table id="categorias-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th>Ordem</th>
+                            <th>Produtos</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Categorias serão carregadas aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tab Content: Produtos -->
+    <section id="produtos-tab" class="tab-content">
+        <div class="container">
+            <div class="section-header">
+                <h3><i class="fas fa-hamburger"></i> Gerenciar Produtos</h3>
+                <div class="header-controls">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-produtos" placeholder="Buscar produtos...">
+                    </div>
+                    <select id="filter-categoria" class="filter-select">
+                        <option value="">Todas as categorias</option>
+                    </select>
+                    <button id="add-produto-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Novo Produto
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table id="produtos-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Categoria</th>
+                            <th>Preço</th>
+                            <th>Status</th>
+                            <th>Destaque</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Produtos serão carregados aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tab Content: Configurações -->
+    <section id="configuracoes-tab" class="tab-content">
+        <div class="container">
+            <div class="section-header">
+                <h3><i class="fas fa-cog"></i> Configurações do Sistema</h3>
+            </div>
+            
+            <div class="config-grid">
+                <div class="config-card">
+                    <div class="config-header">
+                        <i class="fas fa-clock"></i>
+                        <h4>Tempos de Entrega</h4>
+                    </div>
+                    <div class="config-content">
+                        <div class="form-group">
+                            <label for="tempo-entrega">Tempo de Entrega (minutos)</label>
+                            <input type="number" id="tempo-entrega" min="1" max="300">
+                        </div>
+                        <div class="form-group">
+                            <label for="tempo-retirada">Tempo de Retirada (minutos)</label>
+                            <input type="number" id="tempo-retirada" min="1" max="300">
+                        </div>
+                        <button id="salvar-tempos" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar Tempos
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tab Content: Usuário -->
+    <section id="usuario-tab" class="tab-content">
+        <div class="container">
+            <div class="section-header">
+                <h3><i class="fas fa-user"></i> Gerenciar Usuário</h3>
+            </div>
+            
+            <div class="config-grid">
+                <div class="config-card">
+                    <div class="config-header">
+                        <i class="fas fa-user-edit"></i>
+                        <h4>Dados do Usuário</h4>
+                    </div>
+                    <div class="config-content">
+                        <form id="usuario-form">
+                            <div class="form-group">
+                                <label for="usuario-username">Nome de Usuário</label>
+                                <input type="text" id="usuario-username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="usuario-password">Senha Atual (para alterar senha)</label>
+                                <input type="password" id="usuario-password">
+                            </div>
+                            <div class="form-group">
+                                <label for="usuario-new-password">Nova Senha (deixe em branco para não alterar)</label>
+                                <input type="password" id="usuario-new-password">
+                            </div>
+                            <div class="form-group">
+                                <label for="usuario-confirm-password">Confirmar Nova Senha</label>
+                                <input type="password" id="usuario-confirm-password">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar Alterações
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal para Categoria -->
+    <div id="categoria-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="categoria-modal-title">Nova Categoria</h4>
+                <button class="close-btn">&times;</button>
+            </div>
+            <form id="categoria-form">
+                <div class="form-group">
+                    <label for="categoria-nome">Nome *</label>
+                    <input type="text" id="categoria-nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="categoria-descricao">Descrição</label>
+                    <textarea id="categoria-descricao" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="categoria-ordem">Ordem</label>
+                    <input type="number" id="categoria-ordem" min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="categoria-ativo" checked>
+                        <span class="checkmark"></span>
+                        Categoria ativa
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-categoria">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Produto -->
+    <div id="produto-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="produto-modal-title">Novo Produto</h4>
+                <button class="close-btn">&times;</button>
+            </div>
+            <form id="produto-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="produto-nome">Nome *</label>
+                        <input type="text" id="produto-nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="produto-categoria">Categoria *</label>
+                        <select id="produto-categoria" required>
+                            <option value="">Selecione uma categoria</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="produto-descricao">Descrição</label>
+                    <textarea id="produto-descricao" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="produto-preco">Preço (R$) *</label>
+                        <input type="number" id="produto-preco" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="produto-imagem">Imagem do Produto</label>
+                        <input type="file" id="produto-imagem" accept="image/*">
+                        <small>Formatos aceitos: JPG, PNG, GIF (máx. 5MB)</small>
+                        <div id="imagem-preview" class="imagem-preview" style="display: none;">
+                            <img id="preview-img" src="" alt="Preview">
+                            <button type="button" id="remover-imagem" class="btn-remover-imagem">&times;</button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="produto-ativo" checked>
+                            <span class="checkmark"></span>
+                            Produto ativo
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="produto-destaque">
+                            <span class="checkmark"></span>
+                            Produto em destaque
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-produto">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Carregando...</p>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="admin-script.js"></script>
+</body>
+</html>
+

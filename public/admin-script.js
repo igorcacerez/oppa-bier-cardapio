@@ -465,7 +465,7 @@ function openProdutoModal(produto = null) {
         document.getElementById('produto-descricao').value = produto.descricao || '';
         document.getElementById('produto-preco').value = produto.preco;
         document.getElementById('produto-categoria').value = produto.categoria_id;
-        document.getElementById('produto-imagem').value = produto.imagem_url || '';
+        document.getElementById('produto-imagem').value = '';
         document.getElementById('produto-ativo').checked = produto.ativo;
         document.getElementById('produto-destaque').checked = produto.destaque;
     } else {

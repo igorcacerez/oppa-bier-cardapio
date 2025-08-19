@@ -1,0 +1,98 @@
+[
+  {
+    "id": 1,
+    "nome": "Mais vendidos",
+    "descricao": "Os produtos mais pedidos pelos nossos clientes",
+    "ativo": 1
+  },
+  {
+    "id": 2,
+    "nome": "Promoções",
+    "descricao": "Ofertas especiais e promoções",
+    "ativo": 1
+  },
+  {
+    "id": 3,
+    "nome": "Caldos",
+    "descricao": "Caldos quentes e saborosos",
+    "ativo": 1
+  },
+  {
+    "id": 4,
+    "nome": "Hot Dog",
+    "descricao": "Variedade de hot dogs",
+    "ativo": 1
+  },
+  {
+    "id": 5,
+    "nome": "Sucos Naturais",
+    "descricao": "Sucos frescos e naturais",
+    "ativo": 1
+  },
+  {
+    "id": 6,
+    "nome": "X-Salada",
+    "descricao": "Hambúrgueres tradicionais",
+    "ativo": 1
+  },
+  {
+    "id": 7,
+    "nome": "X-Frango (Hambúrguer)",
+    "descricao": "Hambúrgueres de frango",
+    "ativo": 1
+  },
+  {
+    "id": 8,
+    "nome": "X-Frango (Filé)",
+    "descricao": "Sanduíches com filé de frango",
+    "ativo": 1
+  },
+  {
+    "id": 9,
+    "nome": "No Pão Francês",
+    "descricao": "Sanduíches no pão francês",
+    "ativo": 1
+  },
+  {
+    "id": 10,
+    "nome": "Bauru's Aberto",
+    "descricao": "Baurus abertos e especiais",
+    "ativo": 1
+  },
+  {
+    "id": 11,
+    "nome": "Lanches da Casa",
+    "descricao": "Especialidades da casa",
+    "ativo": 1
+  },
+  {
+    "id": 12,
+    "nome": "Lanches Gourmet",
+    "descricao": "Lanches gourmet premium",
+    "ativo": 1
+  },
+  {
+    "id": 13,
+    "nome": "Lanches no Prato",
+    "descricao": "Lanches servidos no prato",
+    "ativo": 1
+  },
+  {
+    "id": 14,
+    "nome": "Omelete",
+    "descricao": "Omeletes saborosos",
+    "ativo": 1
+  },
+  {
+    "id": 15,
+    "nome": "Porções",
+    "descricao": "Porções para compartilhar",
+    "ativo": 1
+  },
+  {
+    "id": 16,
+    "nome": "Bebidas",
+    "descricao": "Bebidas variadas",
+    "ativo": 1
+  }
+]

@@ -5,6 +5,7 @@ const API_BASE_URL = '/api';
 let categorias = [];
 let produtos = [];
 let categoriaAtiva = 'all';
+let categoriasProdutos = []
 
 // Elementos DOM
 const loadingElement = document.getElementById('loading');
@@ -129,6 +130,7 @@ async function carregarCardapioCompleto() {
         if (data.success) {
             // Extrair todos os produtos de todas as categorias
             produtos = [];
+            categoriasProdutos = data.data;
             data.data.forEach(categoria => {
                 categoria.produtos.forEach(produto => {
                     produtos.push({
@@ -151,7 +153,7 @@ function renderizarFiltrosCategorias() {
     // Não limpar o container, apenas adicionar os novos botões após o botão "Todas"
     const botaoTodas = categoriaFiltersContainer.querySelector('[data-categoria="all"]');
     
-    categorias.forEach(categoria => {
+    categoriasProdutos.forEach(categoria => {
         const button = document.createElement('button');
         button.className = 'filter-btn';
         button.setAttribute('data-categoria', categoria.id);
@@ -184,7 +186,7 @@ function renderizarFiltrosCategorias() {
         button.innerHTML = `
             <i class="${icone}"></i>
             ${categoria.nome}
-            <span class="badge">${categoria.total_produtos}</span>
+            <span class="badge">${categoria.produtos.length}</span>
         `;
         
         button.addEventListener('click', () => filtrarPorCategoria(categoria.id));

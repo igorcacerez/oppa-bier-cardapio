@@ -1,7 +1,7 @@
 {
   "name": "oppabier-cardapio",
   "version": "1.0.0",
-  "description": "Cardápio Online da Oppa Bier",
+  "description": "Cardápio Online da Oppa Bier - Versão Corrigida",
   "main": "api/index.js",
   "scripts": {
     "start": "node api/index.js",
@@ -9,7 +9,7 @@
     "build": "echo 'Build completed'",
     "vercel-build": "echo 'Vercel build completed'"
   },
-  "keywords": ["cardapio", "lanchonete", "oppa-bier", "nodejs", "express"],
+  "keywords": ["cardapio", "lanchonete", "oppa-bier", "nodejs", "express", "turso"],
   "author": "Oppa Bier",
   "license": "MIT",
   "engines": {
@@ -25,3 +25,4 @@
     "multer": "^2.0.2"
   }
 }
+

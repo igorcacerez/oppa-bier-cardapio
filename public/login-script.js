@@ -1,4 +1,3 @@
-// Configurações da API
 const API_BASE_URL = '/api';
 
 // Elementos DOM
@@ -65,24 +64,9 @@ async function checkAuthStatus() {
     const token = localStorage.getItem('admin_token');
     
     if (token) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/auth/verify`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (response.ok) {
-                // Já está logado, redirecionar para admin
-                window.location.href = '/admin.html';
-                return;
-            }
-        } catch (error) {
-            console.error('Erro ao verificar autenticação:', error);
-        }
-        
-        // Token inválido, remover
-        localStorage.removeItem('admin_token');
+        // Já está logado, redirecionar para admin
+        window.location.href = '/admin.html';
+        return;
     }
 }
 
@@ -102,7 +86,7 @@ async function handleLogin(e) {
     setLoading(true);
     
     try {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        const response = await fetch(`${API_BASE_URL}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -112,28 +96,25 @@ async function handleLogin(e) {
         
         const data = await response.json();
         
-        if (data.success) {
+        if (response.ok && data.token) {
             // Salvar token
             localStorage.setItem('admin_token', data.token);
             
             // Mostrar sucesso
             showToast('Sucesso', 'Login realizado com sucesso!', 'success');
             
-            // Redirecionar após um breve delay
+            // Redirecionar após delay
             setTimeout(() => {
                 window.location.href = '/admin.html';
             }, 1000);
-            
         } else {
-            showToast('Erro de Login', data.error || 'Credenciais inválidas', 'error');
-            
-            // Limpar campos em caso de erro
+            // Erro de login
+            showToast('Erro', data.error || 'Credenciais inválidas', 'error');
             passwordInput.value = '';
             passwordInput.focus();
         }
-        
     } catch (error) {
-        console.error('Erro ao fazer login:', error);
+        console.error('Erro no login:', error);
         showToast('Erro', 'Erro de conexão. Tente novamente.', 'error');
     } finally {
         setLoading(false);
@@ -141,27 +122,26 @@ async function handleLogin(e) {
 }
 
 function setLoading(loading) {
-    if (loading) {
-        if (loadingElement) loadingElement.classList.remove('hidden');
-        if (loginBtn) {
-            loginBtn.disabled = true;
-            loginBtn.classList.add('loading');
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
-        }
-    } else {
-        if (loadingElement) loadingElement.classList.add('hidden');
-        if (loginBtn) {
-            loginBtn.disabled = false;
-            loginBtn.classList.remove('loading');
-            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar';
+    if (loginBtn) {
+        loginBtn.disabled = loading;
+        loginBtn.innerHTML = loading ? 
+            '<i class="fas fa-spinner fa-spin"></i> Entrando...' : 
+            '<i class="fas fa-sign-in-alt"></i> Entrar';
+    }
+    
+    if (loadingElement) {
+        if (loading) {
+            loadingElement.classList.remove('hidden');
+        } else {
+            loadingElement.classList.add('hidden');
         }
     }
 }
 
 function clearErrors() {
     // Remove visual de erro dos campos
-    usernameInput.style.borderColor = '';
-    passwordInput.style.borderColor = '';
+    if (usernameInput) usernameInput.style.borderColor = '';
+    if (passwordInput) passwordInput.style.borderColor = '';
 }
 
 function togglePassword() {
@@ -169,54 +149,69 @@ function togglePassword() {
     
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
-        passwordIcon.className = 'fas fa-eye-slash';
+        if (passwordIcon) passwordIcon.className = 'fas fa-eye-slash';
     } else {
         passwordInput.type = 'password';
-        passwordIcon.className = 'fas fa-eye';
+        if (passwordIcon) passwordIcon.className = 'fas fa-eye';
     }
 }
 
+// Sistema de Toast
 function showToast(title, message, type = 'info') {
     const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
+    toast.className = `toast toast-${type}`;
     
-    const icons = {
-        success: 'fas fa-check-circle',
-        error: 'fas fa-exclamation-circle',
-        warning: 'fas fa-exclamation-triangle',
-        info: 'fas fa-info-circle'
-    };
+    const icon = type === 'success' ? 'fa-check-circle' : 
+                 type === 'error' ? 'fa-exclamation-circle' : 
+                 'fa-info-circle';
     
     toast.innerHTML = `
-        <i class="${icons[type]} toast-icon"></i>
         <div class="toast-content">
-            <div class="toast-title">${title}</div>
-            <div class="toast-message">${message}</div>
+            <i class="fas ${icon}"></i>
+            <div class="toast-text">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
         </div>
-        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+        <button class="toast-close" onclick="closeToast(this)">
+            <i class="fas fa-times"></i>
+        </button>
     `;
     
-    toastContainer.appendChild(toast);
-    
-    // Remover automaticamente após 5 segundos
-    setTimeout(() => {
-        if (toast.parentElement) {
-            toast.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => toast.remove(), 300);
-        }
-    }, 5000);
+    if (toastContainer) {
+        toastContainer.appendChild(toast);
+        
+        // Auto remove após 5 segundos
+        setTimeout(() => {
+            if (toast.parentNode) {
+                closeToast(toast.querySelector('.toast-close'));
+            }
+        }, 5000);
+    }
 }
 
-// Adicionar animação de saída para toasts
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideOutRight {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
+function closeToast(button) {
+    const toast = button.closest('.toast');
+    if (toast) {
+        toast.style.animation = 'slideOut 0.3s ease-in-out';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
     }
-`;
-document.head.appendChild(style);
+}
 
-// Expor função globalmente para uso no HTML
-window.togglePassword = togglePassword;
+// Animações
+function animateElements() {
+    const elements = document.querySelectorAll('.animate-on-load');
+    elements.forEach((element, index) => {
+        setTimeout(() => {
+            element.classList.add('animated');
+        }, index * 100);
+    });
+}
+
+// Executar animações quando a página carregar
+document.addEventListener('DOMContentLoaded', animateElements);
 

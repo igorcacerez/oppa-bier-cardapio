@@ -29,7 +29,11 @@ app.use(session({
 // Configuração do Multer para upload de imagens
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '..', 'public', 'uploads'));
+        const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -38,7 +42,6 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-    // Aceitar apenas imagens
     if (file.mimetype.startsWith('image/')) {
         cb(null, true);
     } else {
@@ -63,7 +66,7 @@ const client = createClient({
 // Função para inicializar banco de dados
 async function initializeDatabase() {
     try {
-        console.log('Conectando ao Turso...');
+        console.log('🔄 Conectando ao Turso...');
         
         // Criar tabela de usuários admin
         await client.execute(`CREATE TABLE IF NOT EXISTS admin_users (
@@ -104,7 +107,7 @@ async function initializeDatabase() {
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        // Verificar se usuário admin existe
+        // Verificar e criar usuário admin
         const adminCheck = await client.execute("SELECT COUNT(*) as count FROM admin_users");
         if (adminCheck.rows[0].count === 0) {
             const hashedPassword = bcrypt.hashSync('admin123', 10);
@@ -112,10 +115,10 @@ async function initializeDatabase() {
                 sql: "INSERT INTO admin_users (username, password) VALUES (?, ?)",
                 args: ['admin', hashedPassword]
             });
-            console.log('Usuário admin criado com sucesso');
+            console.log('✅ Usuário admin criado');
         }
 
-        // Verificar se configurações existem
+        // Verificar e criar configurações
         const configCheck = await client.execute("SELECT COUNT(*) as count FROM configuracoes");
         if (configCheck.rows[0].count === 0) {
             await client.execute({
@@ -126,21 +129,182 @@ async function initializeDatabase() {
                 sql: "INSERT INTO configuracoes (chave, valor) VALUES (?, ?)",
                 args: ['tempo_retirada', '45']
             });
-            console.log('Configurações padrão criadas');
+            console.log('✅ Configurações padrão criadas');
         }
 
-        console.log('Banco de dados Turso inicializado com sucesso');
+        // Popular categorias se estiver vazio
+        const catCheck = await client.execute("SELECT COUNT(*) as count FROM categorias");
+        if (catCheck.rows[0].count === 0) {
+            await popularCategorias();
+        }
+
+        // Popular produtos se estiver vazio
+        const prodCheck = await client.execute("SELECT COUNT(*) as count FROM produtos");
+        if (prodCheck.rows[0].count === 0) {
+            await popularProdutos();
+        }
+
+        console.log('✅ Banco de dados Turso inicializado com sucesso');
     } catch (error) {
-        console.error('Erro ao inicializar banco Turso:', error);
+        console.error('❌ Erro ao inicializar banco Turso:', error);
         throw error;
     }
 }
 
-// Inicializar banco de dados
-initializeDatabase().catch((error) => {
-    console.error('Erro fatal ao inicializar banco:', error);
-    process.exit(1);
-});
+// Função para popular categorias
+async function popularCategorias() {
+    const categorias = [
+        {"nome": "Mais vendidos", "descricao": "Os produtos mais pedidos pelos nossos clientes"},
+        {"nome": "Promoções", "descricao": "Ofertas especiais e promoções"},
+        {"nome": "Caldos", "descricao": "Caldos quentes e saborosos"},
+        {"nome": "Hot Dog", "descricao": "Variedade de hot dogs"},
+        {"nome": "Sucos Naturais", "descricao": "Sucos frescos e naturais"},
+        {"nome": "X-Salada", "descricao": "Hambúrgueres com salada"},
+        {"nome": "X-Frango (Hambúrguer)", "descricao": "Hambúrgueres de frango"},
+        {"nome": "X-Frango (Filé)", "descricao": "Sanduíches com filé de frango"},
+        {"nome": "No Pão Francês", "descricao": "Sanduíches no pão francês"},
+        {"nome": "Bauru's Aberto", "descricao": "Bauros servidos abertos"},
+        {"nome": "Lanches da Casa", "descricao": "Especialidades da casa"},
+        {"nome": "Lanches Gourmet", "descricao": "Lanches especiais gourmet"},
+        {"nome": "Lanches no Prato", "descricao": "Lanches servidos no prato"},
+        {"nome": "Omelete", "descricao": "Variedade de omeletes"},
+        {"nome": "Porções", "descricao": "Porções para compartilhar"},
+        {"nome": "Bebidas", "descricao": "Bebidas diversas"}
+    ];
+
+    console.log('📋 Populando categorias...');
+    for (const categoria of categorias) {
+        await client.execute({
+            sql: "INSERT INTO categorias (nome, descricao) VALUES (?, ?)",
+            args: [categoria.nome, categoria.descricao]
+        });
+    }
+    console.log(`✅ ${categorias.length} categorias inseridas`);
+}
+
+// Função para popular produtos
+async function popularProdutos() {
+    const produtos = [
+        // Mais vendidos (categoria_id: 1)
+        {"nome": "Bauru Nordestino", "descricao": "Pão francês, mais de 300g de carne seca desfiada, catupiry", "preco": 45.00, "categoria_id": 1, "destaque": 1},
+        {"nome": "Hot Dog Burger", "descricao": "Hambúrguer, salsicha, batata, cenoura, mostarda, catchup e maionese", "preco": 22.00, "categoria_id": 1, "destaque": 1},
+        {"nome": "X-OPPA", "descricao": "1 hambúrguer de costela, 1 hambúrguer de linguiça, 1 hambúrguer de carne, queijo prato, presunto, bacon, calabresa, ovo, cebola, cheddar, catupiry, tomate, alface e maionese", "preco": 33.00, "categoria_id": 1, "destaque": 1},
+        {"nome": "Cowboy", "descricao": "Pão, 2 hamburgueres de 100g, queijo prato, bacon, catupiry, tomate, alface e maionese", "preco": 40.00, "categoria_id": 1, "destaque": 1},
+        {"nome": "Costela Premium", "descricao": "300g de costela, catupiry, queijo prato, oregano, vinagrete, tomate e alface", "preco": 40.00, "categoria_id": 1, "destaque": 1},
+        {"nome": "X-Alcatra Acebolada", "descricao": "Alcatra fatiada, queijo prato, tomate, cebola, maionese, alface", "preco": 36.00, "categoria_id": 1, "destaque": 1},
+
+        // Promoções (categoria_id: 2)
+        {"nome": "Bauru Nordestino Promoção", "descricao": "Pão francês, mais de 300g de carne seca desfiada, catupiry... (Promoção especial)", "preco": 45.00, "categoria_id": 2, "destaque": 1},
+
+        // Caldos (categoria_id: 3)
+        {"nome": "Caldo Verde", "descricao": "Batata, couve, bacon e calabresa. Acompanha torradas", "preco": 25.00, "categoria_id": 3},
+        {"nome": "Dobradinha", "descricao": "Dobradinha, acompanha torradas e farofa", "preco": 25.00, "categoria_id": 3},
+
+        // Hot Dog (categoria_id: 4)
+        {"nome": "Hot Dog Simples", "descricao": "Salsicha, batata, cenoura, mostarda, catchup e maionese", "preco": 12.00, "categoria_id": 4},
+        {"nome": "Hot Dog Duplo", "descricao": "Duas salsichas, batata, cenoura, mostarda, catchup e maionese", "preco": 14.00, "categoria_id": 4},
+        {"nome": "Hot Dog Salada", "descricao": "Salsicha, batata, cenoura, kechup, tomate, alface, mostarda e maionese", "preco": 14.00, "categoria_id": 4},
+        {"nome": "Hot Dog Pizza", "descricao": "Salsicha, batata, cenoura, mostarda, catchup, presunto, queijo e maionese", "preco": 17.00, "categoria_id": 4},
+        {"nome": "Hot Dog Nordestino", "descricao": "Salsicha, carne seca, catupiry, cenoura, maionese, ketchup e mostarda", "preco": 25.00, "categoria_id": 4},
+        {"nome": "Hot Costela", "descricao": "Salsicha perdigão mostarda maionese kechup batata cenoura costela", "preco": 25.00, "categoria_id": 4},
+        {"nome": "Hot da Casa (pão francês)", "descricao": "Salsicha, queijo prato, presunto, ovo, calabresa, bacon, batata, cenoura, mostarda, ketchup e maionese", "preco": 37.00, "categoria_id": 4},
+
+        // Sucos Naturais (categoria_id: 5)
+        {"nome": "Suco Natural 500ml", "descricao": "Suco natural de frutas variadas 500ml", "preco": 14.00, "categoria_id": 5},
+
+        // X-Salada (categoria_id: 6)
+        {"nome": "X-Burguer", "descricao": "Hambúrguer artesanal, presunto, queijo e maionese caseira", "preco": 18.00, "categoria_id": 6},
+        {"nome": "X-Salada", "descricao": "Hambúrguer artesanal, presunto, queijo, tomate, alface e maionese caseira", "preco": 18.00, "categoria_id": 6},
+        {"nome": "X-Egg", "descricao": "Hambúrguer artesanal, presunto, queijo, tomate, alface, ovo e maionese caseira", "preco": 20.00, "categoria_id": 6},
+        {"nome": "X-Acebolado", "descricao": "Hambúrguer artesanal, presunto, queijo, tomate, alface, cebola e maionese caseira", "preco": 20.00, "categoria_id": 6},
+        {"nome": "X Egg Acebolado", "descricao": "Hambúrguer artesanal queijo prato presunto ovo cebola tomate alface maionese caseira", "preco": 22.00, "categoria_id": 6},
+        {"nome": "X-Bacon", "descricao": "Hambúrguer artesanal, presunto, queijo, bacon, tomate, alface e maionese caseira", "preco": 23.00, "categoria_id": 6},
+        {"nome": "X-Calabresa", "descricao": "Hambúrguer artesanal, presunto, queijo, tomate, alface, calabresa e maionese caseira", "preco": 23.00, "categoria_id": 6},
+        {"nome": "X-Tudo", "descricao": "Hambúrguer artesanal, presunto, queijo, tomate, alface, calabresa, bacon, ovo, cebola e maionese caseira", "preco": 35.00, "categoria_id": 6},
+
+        // X-Frango (Hambúrguer) (categoria_id: 7)
+        {"nome": "X-Frango Acebolado", "descricao": "Hambúrguer artesanal de frango, presunto, queijo, tomate, alface, cebola e maionese caseira", "preco": 20.00, "categoria_id": 7},
+
+        // X-Frango (Filé) (categoria_id: 8)
+        {"nome": "X-Frango Filé", "descricao": "Filé de frango, presunto, queijo, tomate, alface e maionese caseira", "preco": 20.00, "categoria_id": 8},
+        {"nome": "X-Frango Filé Acebolado", "descricao": "Filé de frango, presunto, queijo, tomate, alface, cebola e maionese caseira", "preco": 22.00, "categoria_id": 8},
+        {"nome": "X-Frango Filé Bacon", "descricao": "Filé de frango, presunto, queijo, tomate, alface, bacon e maionese caseira", "preco": 27.00, "categoria_id": 8},
+        {"nome": "X-Frango Filé Calabresa", "descricao": "Filé de frango, presunto, queijo, tomate, alface, calabresa e maionese caseira", "preco": 27.00, "categoria_id": 8},
+        {"nome": "X-Frango Filé Tudo", "descricao": "Filé de frango, presunto, queijo, tomate, alface, calabresa, bacon, ovo, cebola e maionese caseira", "preco": 35.00, "categoria_id": 8},
+
+        // No Pão Francês (categoria_id: 9)
+        {"nome": "Queijo Quente", "descricao": "Queijo, tomate, alface e maionese", "preco": 16.00, "categoria_id": 9},
+        {"nome": "Bauru", "descricao": "Presunto, queijo, tomate e maionese", "preco": 16.00, "categoria_id": 9},
+        {"nome": "Misto", "descricao": "Presunto, queijo e maionese", "preco": 16.00, "categoria_id": 9},
+        {"nome": "Americano", "descricao": "Presunto, queijo, tomate, alface, ovo e maionese", "preco": 18.00, "categoria_id": 9},
+        {"nome": "Bauru Acebolado", "descricao": "Presunto, queijo, tomate, cebola e maionese", "preco": 18.00, "categoria_id": 9},
+        {"nome": "Misto Acebolado", "descricao": "Presunto, queijo, cebola e maionese", "preco": 18.00, "categoria_id": 9},
+        {"nome": "Americano Acebolado", "descricao": "Presunto, queijo, tomate, cebola, alface, ovo e maionese", "preco": 20.00, "categoria_id": 9},
+        {"nome": "Americano Bacon", "descricao": "Presunto, queijo, tomate, alface, ovo, bacon e maionese", "preco": 23.00, "categoria_id": 9},
+        {"nome": "Queijo Quente Bacon", "descricao": "Queijo, tomate, alface, bacon e maionese", "preco": 23.00, "categoria_id": 9},
+        {"nome": "Queijo Quente Calabresa", "descricao": "Queijo, calabresa, tomate, alface e maionese", "preco": 23.00, "categoria_id": 9},
+        {"nome": "Bauru Bacon", "descricao": "Presunto, queijo, tomate, bacon e maionese", "preco": 23.00, "categoria_id": 9},
+        {"nome": "Bauru Calabresa", "descricao": "Presunto, queijo, calabresa, tomate e maionese", "preco": 23.00, "categoria_id": 9},
+        {"nome": "Misto Bacon", "descricao": "Presunto, queijo, bacon e maionese", "preco": 23.00, "categoria_id": 9},
+        {"nome": "Misto Calabresa", "descricao": "Presunto, queijo, calabresa e maionese", "preco": 23.00, "categoria_id": 9},
+        {"nome": "Americano Tudo", "descricao": "Presunto, queijo, tomate, alface, ovo, bacon, calabresa e maionese", "preco": 35.00, "categoria_id": 9},
+        {"nome": "Queijo Quente Tudo", "descricao": "Queijo, tomate, alface, bacon, calabresa, presunto, ovo e maionese", "preco": 35.00, "categoria_id": 9},
+        {"nome": "Bauru Tudo", "descricao": "Presunto, queijo, tomate, bacon, calabresa, ovo e maionese", "preco": 35.00, "categoria_id": 9},
+        {"nome": "Misto Tudo", "descricao": "Presunto, queijo, bacon, calabresa, ovo e maionese", "preco": 35.00, "categoria_id": 9},
+
+        // Bauru's Aberto (categoria_id: 10)
+        {"nome": "Bauru Aberto Simples", "descricao": "Oito fatias de presunto, quatro fatias de queijo e tomate", "preco": 25.00, "categoria_id": 10},
+        {"nome": "Bauru Aberto Completo", "descricao": "Oito fatias de presunto, quatro fatias de queijo, tomate, alface, ovo, bacon, calabresa e maionese", "preco": 38.00, "categoria_id": 10},
+        {"nome": "Bauru Costela", "descricao": "Pão francês, mais de 300g de costela desfiada, catupiry, tomate e oregano", "preco": 40.00, "categoria_id": 10},
+
+        // Lanches da Casa (categoria_id: 11)
+        {"nome": "X-Costela", "descricao": "Hambúrguer de costela, pão de hambúrguer, queijo prato, presunto, tomate, alface e maionese", "preco": 18.00, "categoria_id": 11},
+        {"nome": "X-Duplo", "descricao": "Hambúrguer de sua preferência (carne, linguiça ou frango), queijo prato, presunto, tomate, alface e maionese", "preco": 25.00, "categoria_id": 11},
+        {"nome": "Combo Kids", "descricao": "Burguer Kids, Smiles, Docinho, Suquinho e um brinquedinho", "preco": 28.00, "categoria_id": 11},
+        {"nome": "Paulista Filé de Frango", "descricao": "Filé de Frango, queijo prato, presunto, maionese, tomate e alface", "preco": 30.00, "categoria_id": 11},
+        {"nome": "X-Contra Filé", "descricao": "Pão francês, contra filé fatiado, creme cream cheese, maionese, tomate, alface", "preco": 37.00, "categoria_id": 11},
+
+        // Lanches Gourmet (categoria_id: 12)
+        {"nome": "Duplo Gourmet", "descricao": "2 hambúrguer caseiro cebola roxa queijo prato alface tomate maionese", "preco": 30.00, "categoria_id": 12},
+        {"nome": "Duplo Caramelo", "descricao": "Pão Gourmet, 2 hamburgueres de 120g, queijo prato, catupiry, cebola caramelizada, tomate, alface e maionese", "preco": 35.00, "categoria_id": 12},
+        {"nome": "Calabresa Conhaque", "descricao": "2 hambúrguer caseiro queijo prato calabresa com cebola caramelizada no conhaque tomate alface maionese", "preco": 35.00, "categoria_id": 12},
+        {"nome": "Bacon Extreme", "descricao": "Queijo prato, hambúrguer de 120g, muito bacon e um delicioso molho especial", "preco": 40.00, "categoria_id": 12, "destaque": 1},
+        {"nome": "Vulcão Gourmet", "descricao": "2 hambúrguer caseiro queijo prato presunto ovo calabresa bacon cebola roxa tomate alface maionese", "preco": 40.00, "categoria_id": 12, "destaque": 1},
+
+        // Lanches no Prato (categoria_id: 13)
+        {"nome": "X-Salada (No Prato)", "descricao": "Hambúrguer, queijo, tomate, presunto, alface", "preco": 18.00, "categoria_id": 13},
+        {"nome": "X-Filé de Frango (No Prato)", "descricao": "Filé de frango, queijo, tomate, presunto, alface", "preco": 22.00, "categoria_id": 13},
+
+        // Omelete (categoria_id: 14)
+        {"nome": "Omelete", "descricao": "Cinco Ovos, presunto, queijo, calabresa, alface e tomate", "preco": 26.00, "categoria_id": 14},
+
+        // Porções (categoria_id: 15)
+        {"nome": "Batata Frita", "descricao": "Porção de batata frita crocante", "preco": 20.00, "categoria_id": 15},
+        {"nome": "Cebola Empanada", "descricao": "500g porção de cebola empanada", "preco": 25.00, "categoria_id": 15},
+        {"nome": "Porção Calabresa Acebolada", "descricao": "Acompanha torradas. Serve em média 2 a 3 pessoas", "preco": 35.00, "categoria_id": 15},
+        {"nome": "Porção de Filé de Frango", "descricao": "Acompanha torradas", "preco": 35.00, "categoria_id": 15},
+        {"nome": "Isca de Frango Empanado", "descricao": "Iscas de frango empanado crocante", "preco": 40.00, "categoria_id": 15},
+        {"nome": "Batata Frita com Costela Desfiada", "descricao": "Costela desfiada, catupiry, queijo prato, oregano, vinagrete, tomate e alface", "preco": 50.00, "categoria_id": 15, "destaque": 1},
+        {"nome": "Alcatra Completa + Batata", "descricao": "Alcatra, batata frita, torradas. Serve em média 3 a 4 pessoas", "preco": 80.00, "categoria_id": 15, "destaque": 1},
+
+        // Bebidas (categoria_id: 16)
+        {"nome": "Refrigerante Lata", "descricao": "Refrigerante em lata 350ml", "preco": 5.00, "categoria_id": 16},
+        {"nome": "Refrigerante 600ml", "descricao": "Refrigerante garrafa 600ml", "preco": 8.00, "categoria_id": 16},
+        {"nome": "Água Mineral", "descricao": "Água mineral 500ml", "preco": 3.00, "categoria_id": 16},
+        {"nome": "Suco de Caixinha", "descricao": "Suco de caixinha 200ml", "preco": 4.00, "categoria_id": 16},
+        {"nome": "Cerveja Long Neck", "descricao": "Cerveja long neck 355ml", "preco": 6.00, "categoria_id": 16}
+    ];
+
+    console.log('🍔 Populando produtos originais...');
+    for (const produto of produtos) {
+        await client.execute({
+            sql: `INSERT INTO produtos (nome, descricao, preco, categoria_id, destaque) 
+                  VALUES (?, ?, ?, ?, ?)`,
+            args: [produto.nome, produto.descricao, produto.preco, produto.categoria_id, produto.destaque || 0]
+        });
+    }
+    console.log(`✅ ${produtos.length} produtos originais inseridos`);
+}
 
 // Middleware de autenticação
 const authenticateToken = (req, res, next) => {
@@ -211,12 +375,46 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/categorias', async (req, res) => {
     try {
         const result = await client.execute("SELECT * FROM categorias WHERE ativo = 1 ORDER BY nome");
-        res.json(result.rows);
+        res.json({
+            success: true,
+            data: result.rows
+        });
     } catch (error) {
         console.error('Erro ao buscar categorias:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Erro interno do servidor' 
+        });
+    }
+});
+
+
+// Verificar token e retornar usuário autenticado
+app.get('/api/auth/verify', authenticateToken, async (req, res) => {
+    try {
+        const userResult = await client.execute({
+            sql: "SELECT id, username FROM admin_users WHERE id = ?",
+            args: [req.user.id]
+        });
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+
+        const user = userResult.rows[0];
+        res.json({
+            success: true,
+            user: {
+                id: user.id,
+                username: user.username
+            }
+        });
+    } catch (error) {
+        console.error('Erro na verificação do token:', error);
         res.status(500).json({ error: 'Erro interno do servidor' });
     }
 });
+
 
 // Criar nova categoria
 app.post('/api/categorias', authenticateToken, async (req, res) => {
@@ -435,10 +633,16 @@ app.get('/api/configuracoes', async (req, res) => {
             config[row.chave] = row.valor;
         });
         
-        res.json(config);
+        res.json({
+            success: true,
+            data: config
+        });
     } catch (error) {
         console.error('Erro ao buscar configurações:', error);
-        res.status(500).json({ error: 'Erro interno do servidor' });
+        res.status(500).json({ 
+            success: false, 
+            error: 'Erro interno do servidor' 
+        });
     }
 });
 
@@ -523,6 +727,39 @@ app.put('/api/usuario', authenticateToken, async (req, res) => {
 
 // ROTAS ESTATÍSTICAS
 
+// Cardápio completo (endpoint que estava faltando)
+app.get('/api/cardapio-completo', async (req, res) => {
+    try {
+        const categoriasResult = await client.execute("SELECT * FROM categorias WHERE ativo = 1 ORDER BY nome");
+        
+        const cardapio = [];
+        for (const categoria of categoriasResult.rows) {
+            const produtosResult = await client.execute({
+                sql: "SELECT * FROM produtos WHERE categoria_id = ? AND ativo = 1 ORDER BY nome",
+                args: [categoria.id]
+            });
+            
+            cardapio.push({
+                id: categoria.id,
+                nome: categoria.nome,
+                descricao: categoria.descricao,
+                produtos: produtosResult.rows
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: cardapio
+        });
+    } catch (error) {
+        console.error('Erro ao buscar cardápio completo:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Erro interno do servidor' 
+        });
+    }
+});
+
 // Dashboard stats
 app.get('/api/stats', authenticateToken, async (req, res) => {
     try {
@@ -552,6 +789,12 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
 });
 
+// Inicializar banco de dados
+initializeDatabase().catch((error) => {
+    console.error('❌ Erro fatal ao inicializar banco:', error);
+    process.exit(1);
+});
+
 // Export para Vercel
 module.exports = app;
 
@@ -559,9 +802,9 @@ module.exports = app;
 if (require.main === module) {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, '0.0.0.0', () => {
-        console.log(`Servidor rodando na porta ${PORT}`);
-        console.log(`Acesse: http://localhost:${PORT}`);
-        console.log(`Admin: http://localhost:${PORT}/login.html`);
+        console.log(`🚀 Servidor rodando na porta ${PORT}`);
+        console.log(`🌐 Acesse: http://localhost:${PORT}`);
+        console.log(`🔐 Admin: http://localhost:${PORT}/login.html`);
     });
 }
 

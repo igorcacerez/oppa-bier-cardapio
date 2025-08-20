@@ -123,7 +123,7 @@ async function handleLogin() {
     setLoading(true);
     
     try {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        const response = await fetch(`${API_BASE_URL}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -133,10 +133,10 @@ async function handleLogin() {
         
         const data = await response.json();
         
-        if (data.success) {
+        if (!data.error) {
             // Salvar token
             localStorage.setItem('admin_token', data.token);
-            
+
             // Mostrar sucesso
             showToast('Sucesso', 'Login realizado com sucesso!', 'success');
             
